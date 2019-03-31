@@ -1,21 +1,28 @@
 package BufferCache;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 
-class Block extends JLabel{
-	//상태, 가진 주소, 등등등
-}
+
 class Data{
 	private int modN;
 	private int bufferN;
@@ -34,6 +41,83 @@ class Data{
 		return bufferN;
 	}
 }
+class Buffer extends JLabel{//Buffer class
+	private Block blk=new Block();//buffer 객체가 담은 블럭
+	private State bufferState;//buffer의 상태
+	private boolean freeState;//buffer가 현재 freeList에 있는지
+	public Buffer(int number) {
+		//blk number 삽입 및 그리기
+		blk.setNumber(number);
+		setText("<html>"+Integer.toString(number)+"<br/>"+getBufferState()+"</html>");//글자색 지정
+		setFont(new Font("굴림", Font.BOLD, 12));
+		
+		//배경색 지정
+		setOpaque(true);
+		setBackground(Color.white);
+		
+		
+		//경계선 지정
+		Border border=BorderFactory.createLineBorder(Color.black, 3);
+		setBorder(border);
+	}
+	public enum State{
+		LOCKED,UNLOCKED,DELAY,WRITE
+	}
+	public void setFreeState(boolean state) {
+		this.freeState=state;
+	}
+	public void setBufferState(State state) {
+		this.bufferState=state;
+	}
+	public void setBlock(Block block) {
+		this.blk=block;
+	}
+	public boolean getFreeState() {
+		return freeState;
+	}
+	public String getBufferState() {//글자색 지정 및 buffer state string return
+		String state="";
+		switch(bufferState) {
+		case LOCKED:
+			setForeground(Color.red);
+			state="Locked";
+			break;
+		case UNLOCKED:
+			setForeground(Color.black);
+			state="Unlocked";
+			break;
+		case DELAY:
+			setForeground(Color.yellow);
+			state= "Delay";
+			break;
+		default:
+			setForeground(Color.green);
+			state= "Write";
+			break;
+		}
+		return state;
+	}
+	public Block getBlock() {
+		return blk;
+	}
+	
+}
+class Block {//Block Class
+	private int number;//block number
+	public Block() {//default 생성자, number초기화 하지 않을시 -1로 지정
+		number=-1;
+	}
+	public Block(int number) {//Block number을  생성자의 파라미터로 연결 받음
+		this.number=number;
+	}
+	public void setNumber(int number) {//함수로 blk number초기화
+		this.number=number;
+	}
+	public int getNumber() {//blk number 리턴
+		return number;
+	}
+}
+	
 public class BufferCache {
 
 	private JFrame frame;
@@ -74,11 +158,13 @@ public class BufferCache {
 		frame.getContentPane().setLayout(null);
 		
 		JButton initBtn = new JButton("Buffers Init");
-		initBtn.setBounds(415, 20, 91, 23);
+		initBtn.setFont(new Font("굴림", Font.BOLD, 10));
+		initBtn.setBounds(415, 20, 102, 23);
 		frame.getContentPane().add(initBtn);
 		
 		JButton getBlkBtn = new JButton("Get Blk");
-		getBlkBtn.setBounds(415, 73, 91, 23);
+		getBlkBtn.setFont(new Font("굴림", Font.BOLD, 10));
+		getBlkBtn.setBounds(415, 73, 102, 23);
 		frame.getContentPane().add(getBlkBtn);
 		
 		getBlkField = new JTextField();
