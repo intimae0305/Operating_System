@@ -110,7 +110,6 @@ public class BC {
 	 */
 	private void initialize() {//BC 앱 실행
 		Random r=new Random();
-		
 		System.out.println(scenarioTxt.getBounds());
 		frame.setBounds(100, 100, 749, 610);
 		frame.add(panel);
@@ -229,7 +228,7 @@ public class BC {
 								freeList.remove(0);
 								delayBuffer.setBufferState(State.WRITE);
 								bufferList[delayBuffer.getBlock().getNumber()%data.getModN()].addLast(delayBuffer);
-								scenarioTxt.setText("<html>Scenario 3. Make 'Delay' buffer state to 'Write' and remove it from the freelist<br/></html>");
+								scenarioTxt.setText("<html>Scenario 3.<br/>Make 'Delay' buffer state to 'Write' and remove it from the freelist<br/></html>");
 							}
 							else {//시나리오 2 구현
 								Buffer removedBuffer=(Buffer)freeList.remove(0);
@@ -239,10 +238,11 @@ public class BC {
 								int size=bufferList[m].getSize();
 								buffer=bff[m*10+size];
 								buffer.getBlock().setNumber(blkN);
+								bufferList[m].addLast(buffer);//테이블에 버퍼 추가
 								buffer.setBuffer(blkN,State.LOCKED);//busy로 바꿔줌
 								buffer.setVisible(true);
 								bufferList[m].addLast(bff[m*1+size]);
-								scenarioTxt.setText("<html>Scenario 2. pop index 0 buffer from the freeList and add new block in HashQueue<br><br/></html>");
+								scenarioTxt.setText("<html>Scenario 2.<br/>get buffer from the freeList and add "+blkN+" block in HashQueue<br/><br/></html>");
 								Update();
 								break;
 							}
@@ -350,7 +350,8 @@ public class BC {
 	
 
 		scenarioTxt.setHorizontalAlignment(SwingConstants.CENTER);
-		scenarioTxt.setBounds(538, 49, 175, 43);
+		scenarioTxt.setVerticalAlignment(SwingConstants.TOP);
+		scenarioTxt.setBounds(538, 40, 175, 200);
 		panel.add(scenarioTxt);
 		panel.add(new Draw());
 		frame.setSize(1200,800);
