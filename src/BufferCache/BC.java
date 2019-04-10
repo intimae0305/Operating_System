@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -255,59 +256,105 @@ public class BC{
 		initBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+					Arrays.fill(exist, false);
+					initBtn.setEnabled(false);
 					int modN=Integer.parseInt(modNumberField.getText());
 					int bufferN=Integer.parseInt(bufferNumberField.getText());
 					Data d=new Data(modN,bufferN);
 					data.setData(modN,bufferN);
 					//gui부분
-					for(int i=0;i<modN;i++) {//mod갯수 만큼만 초기화
-						modTxt[i].setText("MOD"+i);
-					}
-					modTxt[modN].setText("freelist");
-					for(int i=modN+1;i<maxModTxt;i++) {//나머지는 txt 비워 버림
+					if(modN*3<=bufferN)
+					{
+						scenarioTxt.setText("");
+						for(int i=0;i<modN;i++) {//mod갯수 만큼만 초기화
+							modTxt[i].setText("MOD"+i);
+						}
+						modTxt[modN].setText("freelist");
+						for(int i=modN+1;i<maxModTxt;i++) {//나머지는 txt 비워 버림
 						modTxt[i].setText("");
-					}
-					for(int i=0;i<maxBff;i++) {//버퍼들을 전부 끔
-						bff[i].setVisible(false);
-					}		
-					//프리리스트, 해쉬테이블
-					for(int i=0;i<modN;i++) {//리스트를 전부 비움
-						bufferList[i].MakeEmpty();
-						freeList.MakeEmpty();
-					}
-					for(int i=0;i<bufferN;i++) {
-						int stateNum=r.nextInt(100)+1;
-						if(stateNum<=60)//60퍼센트로 언락
-						{
-							stateNum=2;
 						}
-						else if(stateNum<=90)//30퍼센트로 락
-							stateNum=1;
-						else
-						{
-							stateNum=3;//10퍼센트로 delay
+						for(int i=0;i<maxBff;i++) {//버퍼들을 전부 끔
+							bff[i].setVisible(false);
+						}		
+						//프리리스트, 해쉬테이블
+						for(int i=0;i<modN;i++) {//리스트를 전부 비움
+							bufferList[i].MakeEmpty();
+							freeList.MakeEmpty();
 						}
-						while(true) {
-							int blockNum=r.nextInt(99)+1;
-							if(!exist[blockNum]) {//block Number 중복 방지
-								exist[blockNum]=true;//block number의 값이 이제 존재하므로 true로
-								DoublyLinkedList link=bufferList[blockNum%modN];
-								Buffer buffer=bff[10*(blockNum%modN)+link.getSize()];						
-								link.addLast(buffer);
-								buffer.setBuffer(blockNum,stateNum);
-								if(buffer.getBufferStateToString()=="Delay") {//Delay는 freeList에 무조건 넣음
-									freeList.addLast(buffer);
+						for(int i=0;i<modN;i++) {//모드 마다 3개씩 미리 배정
+							for(int j=0;j<3;j++)
+							{
+								int stateNum=r.nextInt(100)+1;
+								if(stateNum<=60)//60퍼센트로 언락
+								{
+									stateNum=2;
 								}
-								else if(buffer.getBufferStateToString()=="Unlocked") {
-									int freeRan=r.nextInt(100)+1;
-									if(freeRan>=0&&freeRan<=10) {//20퍼센트 확률로 freeList에 넣음
-										freeList.addLast(buffer);
+								else if(stateNum<=90)//30퍼센트로 락
+									stateNum=1;
+								else
+								{
+									stateNum=3;//10퍼센트로 delay
+								}
+								while(true) {
+									int blockNum=r.nextInt(10)*modN+i;
+									if(!exist[blockNum]) {//block Number 중복 방지
+										exist[blockNum]=true;//block number의 값이 이제 존재하므로 true로
+										DoublyLinkedList link=bufferList[i];
+										Buffer buffer=bff[10*i+link.getSize()];						
+										link.addLast(buffer);
+										buffer.setBuffer(blockNum,stateNum);
+										if(buffer.getBufferStateToString()=="Delay") {//Delay는 freeList에 무조건 넣음
+											freeList.addLast(buffer);
+										}
+										else if(buffer.getBufferStateToString()=="Unlocked") {
+											int freeRan=r.nextInt(100)+1;
+											if(freeRan>=0&&freeRan<=10) {//20퍼센트 확률로 freeList에 넣음
+												freeList.addLast(buffer);
+											}
+										}
+										buffer.setVisible(true);
+										break;
 									}
 								}
-								buffer.setVisible(true);
-								break;
 							}
 						}
+						for(int i=3*modN;i<bufferN;i++) {
+							int stateNum=r.nextInt(100)+1;
+							if(stateNum<=60)//60퍼센트로 언락
+							{
+								stateNum=2;
+							}
+							else if(stateNum<=90)//30퍼센트로 락
+								stateNum=1;
+							else
+							{
+								stateNum=3;//10퍼센트로 delay
+							}
+							while(true) {
+								int blockNum=r.nextInt(99)+1;
+								if(!exist[blockNum]) {//block Number 중복 방지
+									exist[blockNum]=true;//block number의 값이 이제 존재하므로 true로
+									DoublyLinkedList link=bufferList[blockNum%modN];
+									Buffer buffer=bff[10*(blockNum%modN)+link.getSize()];						
+									link.addLast(buffer);
+									buffer.setBuffer(blockNum,stateNum);
+									if(buffer.getBufferStateToString()=="Delay") {//Delay는 freeList에 무조건 넣음
+										freeList.addLast(buffer);
+									}
+									else if(buffer.getBufferStateToString()=="Unlocked") {
+										int freeRan=r.nextInt(100)+1;
+										if(freeRan>=0&&freeRan<=10) {//20퍼센트 확률로 freeList에 넣음
+											freeList.addLast(buffer);
+										}
+									}
+									buffer.setVisible(true);
+									break;
+								}
+							}
+						}
+					}
+					else {
+						scenarioTxt.setText("<html>plz buffer Number>=mod*3<html/>");
 					}
 					int x[]=new int[52];
 					int y[]=new int[52];
@@ -328,6 +375,7 @@ public class BC{
 					else
 						panel.setLine(x, y, 0);//프리리스트가 0이면 화살표 수 0으로 셋팅
 					panel.repaint();//버튼 누를때 마다 다시 그리기
+					initBtn.setEnabled(true);
 			}
 });
 		for(int i=0;i<maxModTxt;i++) {
